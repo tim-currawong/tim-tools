@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit Converter - Tim-Tools</title>
+  <meta name="description" content="Fast bidirectional unit converter for length, mass, force, pressure, and electrical units.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%233b82f6' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+
+  <style>
+    /* Tab navigation for dimensions */
+    .dimension-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+      padding-bottom: 0;
+    }
+
+    .dimension-tab {
+      padding: 12px 20px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+      position: relative;
+      top: 2px;
+    }
+
+    .dimension-tab:hover {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .dimension-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Converter layout */
+    .converter-row {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 24px;
+      max-width: 800px;
+    }
+
+    .converter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .converter-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .field-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .converter-input {
+      width: 140px;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 1.1rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-primary);
+      transition: all var(--transition-fast);
+    }
+
+    .converter-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: var(--bg-secondary);
+    }
+
+    .unit-select {
+      min-width: 100px;
+      max-width: 140px;
+      padding: 10px 8px;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .unit-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .swap-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      margin-top: 24px;
+      flex-shrink: 0;
+    }
+
+    .swap-icon:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      transform: rotate(180deg);
+    }
+
+    .swap-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-secondary);
+    }
+
+    .swap-icon:hover svg {
+      stroke: var(--accent);
+    }
+
+    /* Common conversions quick reference */
+    .quick-ref {
+      margin-top: 32px;
+      padding: 20px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-lg);
+    }
+
+    .quick-ref h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .quick-ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .quick-ref-item {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @media (max-width: 768px) {
+      .converter-row {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .converter-input {
+        width: 100%;
+      }
+
+      .unit-select {
+        max-width: none;
+      }
+
+      .swap-icon {
+        margin: 0 auto;
+        transform: rotate(90deg);
+      }
+
+      .swap-icon:hover {
+        transform: rotate(270deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Tim-<span>Tools</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="battery-config.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M22 11v4"/>
+            <path d="M6 11v6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M18 11v6"/>
+          </svg>
+          Battery Configuration
+        </a>
+        <a href="wire-gauge.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Wire Gauge Calculator
+        </a>
+        <a href="unit-converter.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          Unit Converter
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Unit Converter</h1>
+        <p>Fast bidirectional conversion for physical and electrical units.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="card">
+          <!-- Dimension Tabs -->
+          <div class="dimension-tabs">
+            <button class="dimension-tab active" data-dimension="length">Length</button>
+            <button class="dimension-tab" data-dimension="mass">Mass</button>
+            <button class="dimension-tab" data-dimension="force">Force</button>
+            <button class="dimension-tab" data-dimension="torque">Torque</button>
+            <button class="dimension-tab" data-dimension="pressure">Pressure</button>
+            <button class="dimension-tab" data-dimension="temperature">Temperature</button>
+            <button class="dimension-tab" data-dimension="area">Area</button>
+            <button class="dimension-tab" data-dimension="volume">Volume</button>
+            <button class="dimension-tab" data-dimension="energy">Energy</button>
+            <button class="dimension-tab" data-dimension="power">Power</button>
+          </div>
+
+          <!-- Converter Fields -->
+          <div class="converter-row">
+            <div class="converter-field">
+              <label>From</label>
+              <div class="field-row">
+                <input type="number" class="converter-input" id="input-left" placeholder="0" step="any">
+                <select class="unit-select" id="unit-left"></select>
+              </div>
+            </div>
+
+            <button class="swap-icon" id="swap-btn" title="Swap units">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+              </svg>
+            </button>
+
+            <div class="converter-field">
+              <label>To</label>
+              <div class="field-row">
+                <input type="number" class="converter-input" id="input-right" placeholder="0" step="any">
+                <select class="unit-select" id="unit-right"></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Reference -->
+          <div class="quick-ref" id="quick-ref">
+            <h3>Common Conversions</h3>
+            <div class="quick-ref-grid" id="quick-ref-content"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="tim-tools.js"></script>
+  <script>
+    // Unit Converter Logic
+    const UnitConverter = {
+      currentDimension: 'length',
+
+      // Conversion definitions - all conversions are to/from base SI unit
+      dimensions: {
+        length: {
+          name: 'Length',
+          base: 'm',
+          defaultLeft: 'mm',
+          defaultRight: 'in',
+          units: {
+            // Metric
+            'km': { name: 'Kilometers', toBase: 1000 },
+            'm': { name: 'Meters', toBase: 1 },
+            'cm': { name: 'Centimeters', toBase: 0.01 },
+            'mm': { name: 'Millimeters', toBase: 0.001 },
+            'μm': { name: 'Micrometers', toBase: 1e-6 },
+            'nm': { name: 'Nanometers', toBase: 1e-9 },
+            // Imperial
+            'mi': { name: 'Miles', toBase: 1609.344 },
+            'yd': { name: 'Yards', toBase: 0.9144 },
+            'ft': { name: 'Feet', toBase: 0.3048 },
+            'in': { name: 'Inches', toBase: 0.0254 },
+            'mil': { name: 'Mils (thou)', toBase: 0.0000254 },
+            // Nautical
+            'nmi': { name: 'Nautical Miles', toBase: 1852 }
+          },
+          quickRef: [
+            '1 inch = 25.4 mm',
+            '1 foot = 304.8 mm',
+            '1 meter = 3.281 ft',
+            '1 mile = 1.609 km'
+          ]
+        },
+
+        mass: {
+          name: 'Mass',
+          base: 'kg',
+          defaultLeft: 'kg',
+          defaultRight: 'lb',
+          units: {
+            // Metric
+            't': { name: 'Tonnes', toBase: 1000 },
+            'kg': { name: 'Kilograms', toBase: 1 },
+            'g': { name: 'Grams', toBase: 0.001 },
+            'mg': { name: 'Milligrams', toBase: 1e-6 },
+            // Imperial
+            'ton': { name: 'Tons (US)', toBase: 907.185 },
+            'ton_uk': { name: 'Tons (UK)', toBase: 1016.05 },
+            'lb': { name: 'Pounds', toBase: 0.453592 },
+            'oz': { name: 'Ounces', toBase: 0.0283495 }
+          },
+          quickRef: [
+            '1 kg = 2.205 lb',
+            '1 lb = 453.6 g',
+            '1 oz = 28.35 g',
+            '1 tonne = 2205 lb'
+          ]
+        },
+
+        force: {
+          name: 'Force',
+          base: 'N',
+          defaultLeft: 'N',
+          defaultRight: 'lbf',
+          units: {
+            // Metric
+            'kN': { name: 'Kilonewtons', toBase: 1000 },
+            'N': { name: 'Newtons', toBase: 1 },
+            'mN': { name: 'Millinewtons', toBase: 0.001 },
+            'kgf': { name: 'Kilogram-force', toBase: 9.80665 },
+            'gf': { name: 'Gram-force', toBase: 0.00980665 },
+            // Imperial
+            'lbf': { name: 'Pound-force', toBase: 4.44822 },
+            'ozf': { name: 'Ounce-force', toBase: 0.278014 },
+            'kipf': { name: 'Kip-force', toBase: 4448.22 }
+          },
+          quickRef: [
+            '1 N = 0.2248 lbf',
+            '1 lbf = 4.448 N',
+            '1 kgf = 9.807 N',
+            '1 kN = 224.8 lbf'
+          ]
+        },
+
+        pressure: {
+          name: 'Pressure',
+          base: 'Pa',
+          defaultLeft: 'bar',
+          defaultRight: 'psi',
+          units: {
+            // Metric
+            'MPa': { name: 'Megapascals', toBase: 1e6 },
+            'kPa': { name: 'Kilopascals', toBase: 1000 },
+            'Pa': { name: 'Pascals', toBase: 1 },
+            'bar': { name: 'Bar', toBase: 100000 },
+            'mbar': { name: 'Millibar', toBase: 100 },
+            'atm': { name: 'Atmospheres', toBase: 101325 },
+            'mmHg': { name: 'mmHg (Torr)', toBase: 133.322 },
+            // Imperial
+            'psi': { name: 'PSI', toBase: 6894.76 },
+            'ksi': { name: 'KSI', toBase: 6894760 },
+            'inHg': { name: 'Inches Mercury', toBase: 3386.39 }
+          },
+          quickRef: [
+            '1 bar = 14.5 psi',
+            '1 psi = 6.895 kPa',
+            '1 atm = 101.3 kPa',
+            '1 MPa = 145 psi'
+          ]
+        },
+
+        torque: {
+          name: 'Torque',
+          base: 'N·m',
+          defaultLeft: 'N·m',
+          defaultRight: 'lb·ft',
+          units: {
+            // Metric
+            'kN·m': { name: 'Kilonewton-meters', toBase: 1000 },
+            'N·m': { name: 'Newton-meters', toBase: 1 },
+            'N·cm': { name: 'Newton-centimeters', toBase: 0.01 },
+            'kgf·m': { name: 'Kilogram-force meters', toBase: 9.80665 },
+            'kgf·cm': { name: 'Kilogram-force cm', toBase: 0.0980665 },
+            // Imperial
+            'lb·ft': { name: 'Pound-force feet', toBase: 1.35582 },
+            'lb·in': { name: 'Pound-force inches', toBase: 0.112985 },
+            'oz·in': { name: 'Ounce-force inches', toBase: 0.00706155 }
+          },
+          quickRef: [
+            '1 N·m = 0.7376 lb·ft',
+            '1 lb·ft = 1.356 N·m',
+            '1 kgf·m = 9.807 N·m',
+            '1 lb·in = 0.113 N·m'
+          ]
+        },
+
+        temperature: {
+          name: 'Temperature',
+          base: 'K',
+          defaultLeft: 'C',
+          defaultRight: 'F',
+          units: {
+            'C': { name: 'Celsius', toBase: (v) => v + 273.15, fromBase: (v) => v - 273.15 },
+            'F': { name: 'Fahrenheit', toBase: (v) => (v - 32) * 5/9 + 273.15, fromBase: (v) => (v - 273.15) * 9/5 + 32 },
+            'K': { name: 'Kelvin', toBase: (v) => v, fromBase: (v) => v },
+            'R': { name: 'Rankine', toBase: (v) => v * 5/9, fromBase: (v) => v * 9/5 }
+          },
+          quickRef: [
+            '0°C = 32°F',
+            '100°C = 212°F',
+            '20°C = 68°F',
+            '-40°C = -40°F'
+          ]
+        },
+
+        area: {
+          name: 'Area',
+          base: 'm2',
+          defaultLeft: 'mm2',
+          defaultRight: 'in2',
+          units: {
+            'km2': { name: 'Square Kilometers', toBase: 1e6 },
+            'm2': { name: 'Square Meters', toBase: 1 },
+            'cm2': { name: 'Square Centimeters', toBase: 1e-4 },
+            'mm2': { name: 'Square Millimeters', toBase: 1e-6 },
+            'ha': { name: 'Hectares', toBase: 10000 },
+            'mi2': { name: 'Square Miles', toBase: 2.59e6 },
+            'acre': { name: 'Acres', toBase: 4046.86 },
+            'yd2': { name: 'Square Yards', toBase: 0.836127 },
+            'ft2': { name: 'Square Feet', toBase: 0.092903 },
+            'in2': { name: 'Square Inches', toBase: 0.00064516 }
+          },
+          quickRef: [
+            '1 in² = 645.2 mm²',
+            '1 ft² = 0.0929 m²',
+            '1 m² = 10.76 ft²',
+            '1 acre = 4047 m²'
+          ]
+        },
+
+        volume: {
+          name: 'Volume',
+          base: 'm3',
+          defaultLeft: 'L',
+          defaultRight: 'gal',
+          units: {
+            'm3': { name: 'Cubic Meters', toBase: 1 },
+            'cm3': { name: 'Cubic Centimeters', toBase: 1e-6 },
+            'mm3': { name: 'Cubic Millimeters', toBase: 1e-9 },
+            'L': { name: 'Liters', toBase: 0.001 },
+            'mL': { name: 'Milliliters', toBase: 1e-6 },
+            'ft3': { name: 'Cubic Feet', toBase: 0.0283168 },
+            'in3': { name: 'Cubic Inches', toBase: 1.63871e-5 },
+            'gal': { name: 'Gallons (US)', toBase: 0.00378541 },
+            'gal_uk': { name: 'Gallons (UK)', toBase: 0.00454609 },
+            'qt': { name: 'Quarts (US)', toBase: 0.000946353 },
+            'pt': { name: 'Pints (US)', toBase: 0.000473176 },
+            'fl_oz': { name: 'Fluid Ounces (US)', toBase: 2.95735e-5 }
+          },
+          quickRef: [
+            '1 L = 0.264 gal',
+            '1 gal = 3.785 L',
+            '1 m³ = 264.2 gal',
+            '1 ft³ = 28.32 L'
+          ]
+        },
+
+        energy: {
+          name: 'Energy',
+          base: 'J',
+          defaultLeft: 'kWh',
+          defaultRight: 'BTU',
+          units: {
+            'GJ': { name: 'Gigajoules', toBase: 1e9 },
+            'MJ': { name: 'Megajoules', toBase: 1e6 },
+            'kJ': { name: 'Kilojoules', toBase: 1000 },
+            'J': { name: 'Joules', toBase: 1 },
+            'Wh': { name: 'Watt-hours', toBase: 3600 },
+            'kWh': { name: 'Kilowatt-hours', toBase: 3.6e6 },
+            'MWh': { name: 'Megawatt-hours', toBase: 3.6e9 },
+            'cal': { name: 'Calories', toBase: 4.184 },
+            'kcal': { name: 'Kilocalories', toBase: 4184 },
+            'BTU': { name: 'BTU', toBase: 1055.06 },
+            'ft_lbf': { name: 'Foot-pounds', toBase: 1.35582 }
+          },
+          quickRef: [
+            '1 kWh = 3.6 MJ',
+            '1 BTU = 1055 J',
+            '1 kWh = 3412 BTU',
+            '1 cal = 4.184 J'
+          ]
+        },
+
+        power: {
+          name: 'Power',
+          base: 'W',
+          defaultLeft: 'kW',
+          defaultRight: 'hp',
+          units: {
+            'GW': { name: 'Gigawatts', toBase: 1e9 },
+            'MW': { name: 'Megawatts', toBase: 1e6 },
+            'kW': { name: 'Kilowatts', toBase: 1000 },
+            'W': { name: 'Watts', toBase: 1 },
+            'mW': { name: 'Milliwatts', toBase: 0.001 },
+            'hp': { name: 'Horsepower (mech)', toBase: 745.7 },
+            'hp_metric': { name: 'Horsepower (metric)', toBase: 735.5 },
+            'BTU_h': { name: 'BTU per hour', toBase: 0.293071 },
+            'ft_lbf_s': { name: 'Foot-pounds/sec', toBase: 1.35582 }
+          },
+          quickRef: [
+            '1 hp = 745.7 W',
+            '1 kW = 1.341 hp',
+            '1 hp = 0.746 kW',
+            '1 kW = 3412 BTU/h'
+          ]
+        }
+      },
+
+      init() {
+        this.setupEventListeners();
+        this.switchDimension('length');
+      },
+
+      setupEventListeners() {
+        // Tab switching
+        document.querySelectorAll('.dimension-tab').forEach(tab => {
+          tab.addEventListener('click', (e) => {
+            this.switchDimension(e.target.dataset.dimension);
+          });
+        });
+
+        // Input fields - bidirectional conversion
+        document.getElementById('input-left').addEventListener('input', (e) => {
+          this.convert('left');
+        });
+
+        document.getElementById('input-right').addEventListener('input', (e) => {
+          this.convert('right');
+        });
+
+        // Unit selectors
+        document.getElementById('unit-left').addEventListener('change', () => {
+          this.convert('left');
+        });
+
+        document.getElementById('unit-right').addEventListener('change', () => {
+          this.convert('right');
+        });
+
+        // Swap button
+        document.getElementById('swap-btn').addEventListener('click', () => {
+          this.swapUnits();
+        });
+
+        // Focus left input on load
+        setTimeout(() => {
+          document.getElementById('input-left').focus();
+        }, 100);
+      },
+
+      switchDimension(dimensionKey) {
+        this.currentDimension = dimensionKey;
+        const dimension = this.dimensions[dimensionKey];
+
+        // Update active tab
+        document.querySelectorAll('.dimension-tab').forEach(tab => {
+          tab.classList.toggle('active', tab.dataset.dimension === dimensionKey);
+        });
+
+        // Populate unit selectors
+        this.populateUnitSelectors();
+
+        // Set default units
+        document.getElementById('unit-left').value = dimension.defaultLeft;
+        document.getElementById('unit-right').value = dimension.defaultRight;
+
+        // Clear inputs
+        document.getElementById('input-left').value = '';
+        document.getElementById('input-right').value = '';
+
+        // Update quick reference
+        this.updateQuickReference();
+
+        // Focus left input
+        document.getElementById('input-left').focus();
+      },
+
+      populateUnitSelectors() {
+        const dimension = this.dimensions[this.currentDimension];
+        const leftSelect = document.getElementById('unit-left');
+        const rightSelect = document.getElementById('unit-right');
+
+        // Clear existing options
+        leftSelect.innerHTML = '';
+        rightSelect.innerHTML = '';
+
+        // Add options
+        for (const [key, unit] of Object.entries(dimension.units)) {
+          const optLeft = document.createElement('option');
+          optLeft.value = key;
+          optLeft.textContent = unit.name;
+          leftSelect.appendChild(optLeft);
+
+          const optRight = document.createElement('option');
+          optRight.value = key;
+          optRight.textContent = unit.name;
+          rightSelect.appendChild(optRight);
+        }
+      },
+
+      convert(source) {
+        const dimension = this.dimensions[this.currentDimension];
+        const leftInput = document.getElementById('input-left');
+        const rightInput = document.getElementById('input-right');
+        const leftUnit = document.getElementById('unit-left').value;
+        const rightUnit = document.getElementById('unit-right').value;
+
+        if (source === 'left') {
+          const value = parseFloat(leftInput.value);
+          if (isNaN(value)) {
+            rightInput.value = '';
+            return;
+          }
+
+          // Convert to base unit, then to target unit
+          const baseValue = this.toBaseUnit(value, leftUnit, dimension);
+          const result = this.fromBaseUnit(baseValue, rightUnit, dimension);
+          rightInput.value = this.formatResult(result);
+        } else {
+          const value = parseFloat(rightInput.value);
+          if (isNaN(value)) {
+            leftInput.value = '';
+            return;
+          }
+
+          const baseValue = this.toBaseUnit(value, rightUnit, dimension);
+          const result = this.fromBaseUnit(baseValue, leftUnit, dimension);
+          leftInput.value = this.formatResult(result);
+        }
+      },
+
+      toBaseUnit(value, unit, dimension) {
+        const unitDef = dimension.units[unit];
+        if (typeof unitDef.toBase === 'function') {
+          return unitDef.toBase(value);
+        }
+        return value * unitDef.toBase;
+      },
+
+      fromBaseUnit(baseValue, unit, dimension) {
+        const unitDef = dimension.units[unit];
+        if (typeof unitDef.fromBase === 'function') {
+          return unitDef.fromBase(baseValue);
+        }
+        return baseValue / unitDef.toBase;
+      },
+
+      formatResult(value) {
+        if (Math.abs(value) >= 1000000 || (Math.abs(value) < 0.001 && value !== 0)) {
+          return value.toExponential(6);
+        }
+
+        // Smart decimal places
+        if (Math.abs(value) >= 100) return value.toFixed(2);
+        if (Math.abs(value) >= 10) return value.toFixed(3);
+        if (Math.abs(value) >= 1) return value.toFixed(4);
+        if (Math.abs(value) >= 0.1) return value.toFixed(5);
+        return value.toFixed(6);
+      },
+
+      swapUnits() {
+        const leftUnit = document.getElementById('unit-left');
+        const rightUnit = document.getElementById('unit-right');
+        const leftInput = document.getElementById('input-left');
+        const rightInput = document.getElementById('input-right');
+
+        // Swap unit selections
+        const tempUnit = leftUnit.value;
+        leftUnit.value = rightUnit.value;
+        rightUnit.value = tempUnit;
+
+        // Swap values
+        const tempValue = leftInput.value;
+        leftInput.value = rightInput.value;
+        rightInput.value = tempValue;
+
+        // Focus left input
+        leftInput.focus();
+      },
+
+      updateQuickReference() {
+        const dimension = this.dimensions[this.currentDimension];
+        const container = document.getElementById('quick-ref-content');
+
+        container.innerHTML = dimension.quickRef
+          .map(ref => `<div class="quick-ref-item">${ref}</div>`)
+          .join('');
+      }
+    };
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      UnitConverter.init();
+    });
+  </script>
+</body>
+</html>

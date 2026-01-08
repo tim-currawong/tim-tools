@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battery Configuration Calculator - Tim-Tools</title>
+  <meta name="description" content="Configure series and parallel battery packs. Calculate total voltage, capacity, discharge rates, and energy for LiPo, Li-Ion, and LiFe batteries.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%233b82f6' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Tim-<span>Tools</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="battery-config.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M22 11v4"/>
+            <path d="M6 11v6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M18 11v6"/>
+          </svg>
+          Battery Configuration
+        </a>
+        <a href="wire-gauge.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Wire Gauge Calculator
+        </a>
+        <a href="unit-converter.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          Unit Converter
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Battery Configuration</h1>
+        <p>Configure series/parallel battery packs and calculate total capacity, voltage, and discharge limits.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Cell Configuration</h2>
+
+            <!-- Battery Chemistry -->
+            <div class="input-group">
+              <label class="input-label">Battery Chemistry</label>
+              <select class="select-field" id="chemistry-select">
+                <option value="lipo" selected>LiPo (Lithium Polymer)</option>
+                <option value="liion">Li-Ion (Lithium Ion)</option>
+                <option value="lihv">LiHV (High Voltage LiPo)</option>
+                <option value="life">LiFe (Lithium Iron Phosphate)</option>
+              </select>
+            </div>
+
+            <!-- Series Cells -->
+            <div class="input-group">
+              <label class="input-label">
+                Series Cells (S)
+                <span class="input-unit">voltage</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="series-slider" min="1" max="14" value="6" step="1">
+                <input type="text" class="slider-value" id="series-value" value="6">
+              </div>
+              <div class="input-hint" id="series-hint">6S = 22.2V nominal</div>
+            </div>
+
+            <!-- Parallel Cells -->
+            <div class="input-group">
+              <label class="input-label">
+                Parallel Packs (P)
+                <span class="input-unit">capacity</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="parallel-slider" min="1" max="8" value="1" step="1">
+                <input type="text" class="slider-value" id="parallel-value" value="1">
+              </div>
+              <div class="input-hint" id="parallel-hint">1P = single pack</div>
+            </div>
+
+            <hr class="divider">
+
+            <h2 class="card-title">Pack Specifications</h2>
+
+            <!-- Cell Capacity -->
+            <div class="input-group">
+              <label class="input-label">
+                Cell/Pack Capacity
+                <span class="input-unit">mAh</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="capacity-slider" min="100" max="10000" value="1500" step="50">
+                <input type="text" class="slider-value" id="capacity-value" value="1500">
+              </div>
+            </div>
+
+            <!-- Discharge Rating -->
+            <div class="input-group">
+              <label class="input-label">
+                Discharge Rating (C)
+                <span class="input-unit">continuous</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="crating-slider" min="5" max="150" value="45" step="5">
+                <input type="text" class="slider-value" id="crating-value" value="45">
+              </div>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+
+            <div class="advanced-content" id="advanced-content">
+              <!-- Burst Rating -->
+              <div class="input-group">
+                <label class="input-label">
+                  Burst Discharge Rating
+                  <span class="input-unit">C (10 sec)</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="burst-rating" value="90" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Cell Weight -->
+              <div class="input-group">
+                <label class="input-label">
+                  Pack Weight
+                  <span class="input-unit">grams</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="pack-weight" value="400" style="width: 100px;">
+                </div>
+              </div>
+
+              <!-- Internal Resistance -->
+              <div class="input-group">
+                <label class="input-label">
+                  Cell Internal Resistance
+                  <span class="input-unit">mΩ per cell</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="cell-resistance" value="3" style="width: 100px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Pack Diagram</h2>
+            <div class="battery-diagram" id="battery-diagram">
+              <!-- Generated by JS -->
+            </div>
+            <div class="pack-notation" id="pack-notation">6S1P</div>
+            <div class="voltage-bar-container">
+              <div class="voltage-bar-labels">
+                <span id="voltage-min">19.8V</span>
+                <span id="voltage-nom">22.2V</span>
+                <span id="voltage-max">25.2V</span>
+              </div>
+              <div class="voltage-bar">
+                <div class="voltage-bar-empty"></div>
+                <div class="voltage-bar-nominal" id="voltage-bar-nom"></div>
+                <div class="voltage-bar-full" id="voltage-bar-full"></div>
+              </div>
+              <div class="voltage-bar-legend">
+                <span>Empty</span>
+                <span>Nominal</span>
+                <span>Full</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+
+            <div class="result-item">
+              <div class="result-label">Pack Configuration</div>
+              <div class="result-value highlight" id="result-config">—</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Nominal Voltage</div>
+              <div class="result-value" id="result-voltage-nom">—<span class="unit">V</span></div>
+              <div class="result-subtext" id="result-voltage-range"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Total Capacity</div>
+              <div class="result-value" id="result-capacity">—<span class="unit">mAh</span></div>
+              <div class="result-subtext" id="result-capacity-ah"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Energy Storage</div>
+              <div class="result-value" id="result-energy">—<span class="unit">Wh</span></div>
+              <div class="result-subtext" id="result-energy-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Max Continuous Current</div>
+              <div class="result-value" id="result-max-current">—<span class="unit">A</span></div>
+              <div class="result-subtext" id="result-current-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Burst Current (10s)</div>
+              <div class="result-value" id="result-burst-current">—<span class="unit">A</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Max Continuous Power</div>
+              <div class="result-value" id="result-max-power">—<span class="unit">W</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Total Internal Resistance</div>
+              <div class="result-value" id="result-resistance">—<span class="unit">mΩ</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Estimated Weight</div>
+              <div class="result-value" id="result-weight">—<span class="unit">g</span></div>
+              <div class="result-subtext" id="result-energy-density"></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Use these results in:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="tim-tools.js"></script>
+  <script>
+    // Battery Configuration Calculator Logic
+    const BatteryCalc = {
+      // Battery chemistry specifications
+      CHEMISTRY: {
+        lipo: {
+          name: 'LiPo',
+          nominalV: 3.7,
+          fullV: 4.2,
+          emptyV: 3.3,
+          storageV: 3.85
+        },
+        liion: {
+          name: 'Li-Ion',
+          nominalV: 3.6,
+          fullV: 4.2,
+          emptyV: 2.8,
+          storageV: 3.7
+        },
+        lihv: {
+          name: 'LiHV',
+          nominalV: 3.8,
+          fullV: 4.35,
+          emptyV: 3.3,
+          storageV: 3.9
+        },
+        life: {
+          name: 'LiFe',
+          nominalV: 3.2,
+          fullV: 3.6,
+          emptyV: 2.8,
+          storageV: 3.3
+        }
+      },
+
+      // Current state
+      state: {
+        chemistry: 'lipo',
+        series: 6,
+        parallel: 1,
+        capacity: 1500,
+        cRating: 45,
+        burstRating: 90,
+        packWeight: 400,
+        cellResistance: 3
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.calculate();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Chemistry select
+        document.getElementById('chemistry-select').addEventListener('change', (e) => {
+          this.state.chemistry = e.target.value;
+          this.calculate();
+        });
+
+        // Slider + value pairs
+        this.bindSlider('series', 'series-slider', 'series-value');
+        this.bindSlider('parallel', 'parallel-slider', 'parallel-value');
+        this.bindSlider('capacity', 'capacity-slider', 'capacity-value');
+        this.bindSlider('cRating', 'crating-slider', 'crating-value');
+
+        // Direct inputs
+        this.bindInput('burstRating', 'burst-rating');
+        this.bindInput('packWeight', 'pack-weight');
+        this.bindInput('cellResistance', 'cell-resistance');
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          TimTools.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      bindInput(stateKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            this.calculate();
+          }
+        });
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = TimTools.state.getAll();
+
+        if (urlState.chem) {
+          this.state.chemistry = urlState.chem;
+          document.getElementById('chemistry-select').value = urlState.chem;
+        }
+        if (urlState.s) {
+          this.state.series = urlState.s;
+          document.getElementById('series-slider').value = urlState.s;
+          document.getElementById('series-value').value = urlState.s;
+        }
+        if (urlState.p) {
+          this.state.parallel = urlState.p;
+          document.getElementById('parallel-slider').value = urlState.p;
+          document.getElementById('parallel-value').value = urlState.p;
+        }
+        if (urlState.cap) {
+          this.state.capacity = urlState.cap;
+          document.getElementById('capacity-slider').value = urlState.cap;
+          document.getElementById('capacity-value').value = urlState.cap;
+        }
+        if (urlState.c) {
+          this.state.cRating = urlState.c;
+          document.getElementById('crating-slider').value = urlState.c;
+          document.getElementById('crating-value').value = urlState.c;
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        TimTools.state.set({
+          chem: this.state.chemistry,
+          s: this.state.series,
+          p: this.state.parallel,
+          cap: this.state.capacity,
+          c: this.state.cRating
+        });
+      },
+
+      // Main calculation
+      calculate() {
+        const s = this.state;
+        const chem = this.CHEMISTRY[s.chemistry];
+
+        // Voltages
+        const nominalV = chem.nominalV * s.series;
+        const fullV = chem.fullV * s.series;
+        const emptyV = chem.emptyV * s.series;
+        const storageV = chem.storageV * s.series;
+
+        // Capacity (parallel adds capacity)
+        const totalCapacity = s.capacity * s.parallel;
+        const capacityAh = totalCapacity / 1000;
+
+        // Energy (Wh = Ah × V)
+        const energy = capacityAh * nominalV;
+
+        // Current limits
+        const maxContinuousCurrent = (totalCapacity / 1000) * s.cRating;
+        const burstCurrent = (totalCapacity / 1000) * s.burstRating;
+
+        // Power
+        const maxPower = maxContinuousCurrent * nominalV;
+
+        // Internal resistance
+        // Series adds resistance, parallel reduces it
+        const totalResistance = (s.cellResistance * s.series) / s.parallel;
+
+        // Weight (parallel multiplies packs)
+        const totalWeight = s.packWeight * s.parallel;
+        const energyDensity = energy / (totalWeight / 1000); // Wh/kg
+
+        // Update hints
+        document.getElementById('series-hint').textContent =
+          `${s.series}S = ${nominalV.toFixed(1)}V nominal`;
+        document.getElementById('parallel-hint').textContent =
+          s.parallel === 1 ? '1P = single pack' : `${s.parallel}P = ${s.parallel} packs in parallel`;
+
+        // Update results display
+        this.updateResults({
+          config: `${s.series}S${s.parallel}P`,
+          nominalV,
+          fullV,
+          emptyV,
+          storageV,
+          totalCapacity,
+          capacityAh,
+          energy,
+          maxContinuousCurrent,
+          burstCurrent,
+          maxPower,
+          totalResistance,
+          totalWeight,
+          energyDensity,
+          chemistry: chem
+        });
+
+        // Update visualization
+        this.updateDiagram(s.series, s.parallel);
+        this.updateVoltageBar(emptyV, nominalV, fullV);
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r) {
+        document.getElementById('result-config').innerHTML = r.config;
+        document.getElementById('pack-notation').textContent = r.config;
+
+        document.getElementById('result-voltage-nom').innerHTML =
+          `${r.nominalV.toFixed(1)}<span class="unit">V</span>`;
+        document.getElementById('result-voltage-range').textContent =
+          `Range: ${r.emptyV.toFixed(1)}V - ${r.fullV.toFixed(1)}V`;
+
+        document.getElementById('result-capacity').innerHTML =
+          `${r.totalCapacity.toLocaleString()}<span class="unit">mAh</span>`;
+        document.getElementById('result-capacity-ah').textContent =
+          `${r.capacityAh.toFixed(2)} Ah`;
+
+        document.getElementById('result-energy').innerHTML =
+          `${r.energy.toFixed(1)}<span class="unit">Wh</span>`;
+        document.getElementById('result-energy-note').textContent =
+          `${(r.energy * 3.6).toFixed(0)} kJ`;
+
+        document.getElementById('result-max-current').innerHTML =
+          `${r.maxContinuousCurrent.toFixed(1)}<span class="unit">A</span>`;
+        document.getElementById('result-current-note').textContent =
+          `@ ${this.state.cRating}C rating`;
+
+        document.getElementById('result-burst-current').innerHTML =
+          `${r.burstCurrent.toFixed(1)}<span class="unit">A</span>`;
+
+        document.getElementById('result-max-power').innerHTML =
+          `${r.maxPower.toFixed(0)}<span class="unit">W</span>`;
+
+        document.getElementById('result-resistance').innerHTML =
+          `${r.totalResistance.toFixed(1)}<span class="unit">mΩ</span>`;
+
+        document.getElementById('result-weight').innerHTML =
+          `${r.totalWeight.toFixed(0)}<span class="unit">g</span>`;
+        document.getElementById('result-energy-density').textContent =
+          `${r.energyDensity.toFixed(1)} Wh/kg`;
+
+        // Update voltage bar labels
+        document.getElementById('voltage-min').textContent = `${r.emptyV.toFixed(1)}V`;
+        document.getElementById('voltage-nom').textContent = `${r.nominalV.toFixed(1)}V`;
+        document.getElementById('voltage-max').textContent = `${r.fullV.toFixed(1)}V`;
+
+        // Update use-in links
+        this.updateUseInLinks(r);
+      },
+
+      updateDiagram(series, parallel) {
+        const container = document.getElementById('battery-diagram');
+
+        // Limit display for large configurations
+        const displaySeries = Math.min(series, 8);
+        const displayParallel = Math.min(parallel, 4);
+
+        let html = '<div class="battery-pack-grid">';
+
+        for (let p = 0; p < displayParallel; p++) {
+          html += '<div class="battery-series-row">';
+          for (let s = 0; s < displaySeries; s++) {
+            html += `
+              <div class="battery-cell">
+                <div class="cell-plus">+</div>
+                <div class="cell-body"></div>
+                <div class="cell-minus">−</div>
+              </div>
+            `;
+            if (s < displaySeries - 1) {
+              html += '<div class="cell-connector series"></div>';
+            }
+          }
+          if (series > displaySeries) {
+            html += `<div class="cell-more">+${series - displaySeries}</div>`;
+          }
+          html += '</div>';
+          if (p < displayParallel - 1) {
+            html += '<div class="parallel-connector"></div>';
+          }
+        }
+
+        if (parallel > displayParallel) {
+          html += `<div class="pack-more">+${parallel - displayParallel} more packs</div>`;
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+      },
+
+      updateVoltageBar(empty, nominal, full) {
+        const range = full - empty;
+        const nominalPct = ((nominal - empty) / range) * 100;
+
+        document.getElementById('voltage-bar-nom').style.width = `${nominalPct}%`;
+        document.getElementById('voltage-bar-full').style.width = '100%';
+      },
+
+      updateUseInLinks(r) {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Power System Calculator link
+        const powerLink = document.createElement('a');
+        powerLink.href = `power-system.html?cells=${this.state.series}`;
+        powerLink.className = 'use-in-link';
+        powerLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Power System (${this.state.series}S)
+        `;
+        container.appendChild(powerLink);
+
+        // Wire Gauge link
+        const wireLink = document.createElement('a');
+        wireLink.href = `wire-gauge.html?current=${Math.ceil(r.maxContinuousCurrent)}&voltage=${r.nominalV.toFixed(1)}`;
+        wireLink.className = 'use-in-link';
+        wireLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Wire Gauge (${r.maxContinuousCurrent.toFixed(0)}A)
+        `;
+        container.appendChild(wireLink);
+
+        // Flight Time link
+        const flightLink = document.createElement('a');
+        flightLink.href = `flight-time.html?cap=${r.totalCapacity}&v=${r.nominalV.toFixed(1)}`;
+        flightLink.className = 'use-in-link';
+        flightLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time (${r.totalCapacity}mAh)
+        `;
+        container.appendChild(flightLink);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      BatteryCalc.init();
+    });
+  </script>
+
+  <style>
+    /* Battery diagram styles */
+    .battery-diagram {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 150px;
+    }
+
+    .battery-pack-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .battery-series-row {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .battery-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 32px;
+    }
+
+    .cell-plus {
+      font-size: 10px;
+      color: var(--accent);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .cell-body {
+      width: 24px;
+      height: 40px;
+      background: linear-gradient(180deg, var(--accent) 0%, #996600 100%);
+      border-radius: 3px;
+      border: 2px solid var(--text-muted);
+    }
+
+    .cell-minus {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .cell-connector {
+      width: 8px;
+      height: 3px;
+      background: var(--text-muted);
+      margin: 0 -2px;
+      align-self: center;
+    }
+
+    .cell-connector.series {
+      margin-top: 12px;
+    }
+
+    .parallel-connector {
+      width: 80%;
+      height: 2px;
+      background: var(--text-muted);
+      position: relative;
+    }
+
+    .parallel-connector::before,
+    .parallel-connector::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 8px;
+      background: var(--text-muted);
+      top: -3px;
+    }
+
+    .parallel-connector::before {
+      left: 0;
+    }
+
+    .parallel-connector::after {
+      right: 0;
+    }
+
+    .cell-more,
+    .pack-more {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+    }
+
+    .pack-notation {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 8px 0;
+    }
+
+    /* Voltage bar */
+    .voltage-bar-container {
+      padding: 16px;
+    }
+
+    .voltage-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .voltage-bar {
+      height: 24px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .voltage-bar-empty {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(90deg, #e74c3c 0%, #e74c3c 100%);
+    }
+
+    .voltage-bar-nominal {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 50%, #f1c40f 100%);
+      transition: width var(--transition-normal);
+    }
+
+    .voltage-bar-full {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, #e74c3c 0%, #f39c12 30%, #2ecc71 70%, #27ae60 100%);
+      transition: width var(--transition-normal);
+    }
+
+    .voltage-bar-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 16px 0;
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .battery-cell {
+        width: 24px;
+      }
+
+      .cell-body {
+        width: 18px;
+        height: 30px;
+      }
+    }
+  </style>
+</body>
+</html>

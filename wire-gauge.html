@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wire Gauge Calculator - Tim-Tools</title>
+  <meta name="description" content="Calculate the optimal wire gauge (AWG) based on current draw and cable length. Minimize voltage drop and ensure safe operation.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%233b82f6' rx='20' width='100' height='100'/><path d='M50 20 L70 45 L60 45 L60 80 L40 80 L40 45 L30 45 Z' fill='%231a1a1a'/></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L15 9H21L16 14L18 22L12 18L6 22L8 14L3 9H9L12 2Z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Tim-<span>Tools</span></span>
+        </a>
+      </div>
+
+      <div class="sidebar-search">
+        <input type="text" class="search-input" placeholder="Search calculators..." aria-label="Search calculators">
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="battery-config.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M22 11v4"/>
+            <path d="M6 11v6"/>
+            <path d="M10 11v6"/>
+            <path d="M14 11v6"/>
+            <path d="M18 11v6"/>
+          </svg>
+          Battery Configuration
+        </a>
+        <a href="wire-gauge.html" class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Wire Gauge Calculator
+        </a>
+        <a href="unit-converter.html" class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+          Unit Converter
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="page-header">
+        <h1>Wire Gauge Calculator</h1>
+        <p>Select the right wire gauge (AWG) based on current draw and cable length to minimize voltage drop.</p>
+      </header>
+
+      <div class="calculator-container">
+        <div class="calculator-grid">
+          <!-- Inputs Panel -->
+          <div class="card inputs-panel">
+            <h2 class="card-title">Inputs</h2>
+
+            <!-- Current Draw -->
+            <div class="input-group">
+              <label class="input-label">
+                Maximum Current
+                <span class="input-unit">Amps</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="current-slider" min="1" max="200" value="40" step="1">
+                <input type="text" class="slider-value" id="current-value" value="40">
+              </div>
+            </div>
+
+            <!-- Cable Length -->
+            <div class="input-group">
+              <label class="input-label">
+                Cable Length (one way)
+                <span class="input-unit">cm</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="length-slider" min="5" max="200" value="30" step="5">
+                <input type="text" class="slider-value" id="length-value" value="30">
+              </div>
+            </div>
+
+            <!-- System Voltage -->
+            <div class="input-group">
+              <label class="input-label">
+                System Voltage
+                <span class="input-unit">V</span>
+              </label>
+              <div class="slider-container">
+                <input type="range" class="slider" id="voltage-slider" min="3" max="60" value="22.2" step="0.1">
+                <input type="text" class="slider-value" id="voltage-value" value="22.2">
+              </div>
+              <div class="input-hint">Typical: 3S=11.1V, 4S=14.8V, 6S=22.2V</div>
+            </div>
+
+            <!-- Wire Material -->
+            <div class="input-group">
+              <label class="input-label">
+                Wire Material
+              </label>
+              <select class="select-field" id="material-select">
+                <option value="copper" selected>Copper (most common)</option>
+                <option value="aluminum">Aluminum</option>
+              </select>
+            </div>
+
+            <!-- Advanced Settings Toggle -->
+            <button class="advanced-toggle" id="advanced-toggle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              Advanced Settings
+            </button>
+
+            <div class="advanced-content" id="advanced-content">
+              <!-- Max Voltage Drop -->
+              <div class="input-group">
+                <label class="input-label">
+                  Target Max Voltage Drop
+                  <span class="input-unit">%</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="max-drop" value="3" style="width: 100px;">
+                </div>
+                <div class="input-hint">Recommended: 1-3% for power wires</div>
+              </div>
+
+              <!-- Temperature -->
+              <div class="input-group">
+                <label class="input-label">
+                  Operating Temperature
+                  <span class="input-unit">°C</span>
+                </label>
+                <div class="input-row">
+                  <input type="text" class="input-field" id="temperature" value="25" style="width: 100px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualization Area -->
+          <div class="card viz-area">
+            <h2 class="card-title">Wire Comparison</h2>
+            <div class="wire-comparison" id="wire-comparison">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="card results-panel">
+            <h2 class="card-title">Results</h2>
+
+            <div class="result-item">
+              <div class="result-label">Recommended Wire Gauge</div>
+              <div class="result-value highlight" id="result-gauge">—<span class="unit">AWG</span></div>
+              <div class="result-subtext" id="result-gauge-note"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Wire Diameter</div>
+              <div class="result-value" id="result-diameter">—<span class="unit">mm</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Cross-Section Area</div>
+              <div class="result-value" id="result-area">—<span class="unit">mm²</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Voltage Drop</div>
+              <div class="result-value" id="result-vdrop">—<span class="unit">V</span></div>
+              <div class="result-subtext" id="result-vdrop-pct"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Power Loss in Wire</div>
+              <div class="result-value" id="result-power-loss">—<span class="unit">W</span></div>
+              <div class="result-subtext" id="result-power-pct"></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Wire Resistance</div>
+              <div class="result-value" id="result-resistance">—<span class="unit">mΩ</span></div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Current Capacity</div>
+              <div class="result-value" id="result-capacity">—<span class="unit">A</span></div>
+              <div class="result-subtext" id="result-capacity-note"></div>
+            </div>
+
+            <!-- Share Section -->
+            <div class="share-section">
+              <button class="btn btn-primary btn-full" id="share-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                Copy Link to Share
+              </button>
+            </div>
+
+            <!-- Use in other calculators -->
+            <div class="use-in-section" id="use-in-section">
+              <div class="use-in-title">Related calculators:</div>
+              <div class="use-in-links" id="use-in-links">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="tim-tools.js"></script>
+  <script>
+    // Wire Gauge Calculator Logic
+    const WireCalc = {
+      // AWG Wire Data: [AWG, diameter(mm), area(mm²), resistance(Ω/m @ 20°C copper), typical ampacity]
+      // Resistance values for copper at 20°C
+      AWG_DATA: [
+        { awg: 0,  diameter: 8.251, area: 53.49,  resistance: 0.000322, ampacity: 245 },
+        { awg: 2,  diameter: 6.544, area: 33.63,  resistance: 0.000512, ampacity: 181 },
+        { awg: 4,  diameter: 5.189, area: 21.15,  resistance: 0.000815, ampacity: 135 },
+        { awg: 6,  diameter: 4.115, area: 13.30,  resistance: 0.001296, ampacity: 101 },
+        { awg: 8,  diameter: 3.264, area: 8.366,  resistance: 0.002061, ampacity: 73 },
+        { awg: 10, diameter: 2.588, area: 5.261,  resistance: 0.003277, ampacity: 55 },
+        { awg: 12, diameter: 2.053, area: 3.309,  resistance: 0.005211, ampacity: 41 },
+        { awg: 14, diameter: 1.628, area: 2.081,  resistance: 0.008286, ampacity: 32 },
+        { awg: 16, diameter: 1.291, area: 1.309,  resistance: 0.01317,  ampacity: 22 },
+        { awg: 18, diameter: 1.024, area: 0.823,  resistance: 0.02095,  ampacity: 16 },
+        { awg: 20, diameter: 0.812, area: 0.518,  resistance: 0.03331,  ampacity: 11 },
+        { awg: 22, diameter: 0.644, area: 0.326,  resistance: 0.05296,  ampacity: 7 },
+        { awg: 24, diameter: 0.511, area: 0.205,  resistance: 0.08422,  ampacity: 3.5 },
+      ],
+
+      // Material resistivity multipliers (relative to copper at 20°C)
+      MATERIAL_FACTORS: {
+        copper: 1.0,
+        aluminum: 1.64  // Aluminum has ~64% higher resistivity
+      },
+
+      // Temperature coefficient for copper (per °C)
+      TEMP_COEFFICIENT: 0.00393,
+
+      // Current state
+      state: {
+        current: 40,
+        length: 30,    // cm (one way)
+        voltage: 22.2,
+        material: 'copper',
+        maxDrop: 3,    // percent
+        temperature: 25
+      },
+
+      // Initialize
+      init() {
+        this.bindInputs();
+        this.loadFromUrl();
+        this.calculate();
+      },
+
+      // Bind all input events
+      bindInputs() {
+        // Slider + value pairs
+        this.bindSlider('current', 'current-slider', 'current-value');
+        this.bindSlider('length', 'length-slider', 'length-value');
+        this.bindSlider('voltage', 'voltage-slider', 'voltage-value');
+
+        // Direct inputs
+        this.bindInput('maxDrop', 'max-drop');
+        this.bindInput('temperature', 'temperature');
+
+        // Material select
+        document.getElementById('material-select').addEventListener('change', (e) => {
+          this.state.material = e.target.value;
+          this.calculate();
+        });
+
+        // Share button
+        document.getElementById('share-btn').addEventListener('click', () => {
+          TimTools.state.copyShareUrl();
+        });
+      },
+
+      bindSlider(stateKey, sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const valueInput = document.getElementById(valueId);
+
+        const update = (val) => {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            slider.value = num;
+            valueInput.value = num;
+            this.calculate();
+          }
+        };
+
+        slider.addEventListener('input', (e) => update(e.target.value));
+        valueInput.addEventListener('change', (e) => update(e.target.value));
+        valueInput.addEventListener('keyup', (e) => {
+          if (e.key === 'Enter') update(e.target.value);
+        });
+      },
+
+      bindInput(stateKey, inputId) {
+        const input = document.getElementById(inputId);
+        input.addEventListener('change', (e) => {
+          const num = parseFloat(e.target.value);
+          if (!isNaN(num)) {
+            this.state[stateKey] = num;
+            this.calculate();
+          }
+        });
+      },
+
+      // Load state from URL
+      loadFromUrl() {
+        const urlState = TimTools.state.getAll();
+
+        if (urlState.current) {
+          this.state.current = urlState.current;
+          document.getElementById('current-slider').value = urlState.current;
+          document.getElementById('current-value').value = urlState.current;
+        }
+        if (urlState.length) {
+          this.state.length = urlState.length;
+          document.getElementById('length-slider').value = urlState.length;
+          document.getElementById('length-value').value = urlState.length;
+        }
+        if (urlState.voltage) {
+          this.state.voltage = urlState.voltage;
+          document.getElementById('voltage-slider').value = urlState.voltage;
+          document.getElementById('voltage-value').value = urlState.voltage;
+        }
+        if (urlState.material) {
+          this.state.material = urlState.material;
+          document.getElementById('material-select').value = urlState.material;
+        }
+        if (urlState.maxDrop) {
+          this.state.maxDrop = urlState.maxDrop;
+          document.getElementById('max-drop').value = urlState.maxDrop;
+        }
+      },
+
+      // Save state to URL
+      saveToUrl() {
+        TimTools.state.set({
+          current: this.state.current,
+          length: this.state.length,
+          voltage: this.state.voltage,
+          material: this.state.material,
+          maxDrop: this.state.maxDrop
+        });
+      },
+
+      // Calculate resistance at temperature
+      getResistanceAtTemp(baseResistance) {
+        const tempDiff = this.state.temperature - 20;
+        return baseResistance * (1 + this.TEMP_COEFFICIENT * tempDiff);
+      },
+
+      // Main calculation
+      calculate() {
+        const s = this.state;
+
+        // Round-trip length in meters
+        const totalLength = (s.length * 2) / 100;
+
+        // Material factor
+        const materialFactor = this.MATERIAL_FACTORS[s.material];
+
+        // Calculate voltage drop for each gauge and find the best one
+        const results = this.AWG_DATA.map(wire => {
+          const resistance = this.getResistanceAtTemp(wire.resistance) * materialFactor * totalLength;
+          const voltageDrop = s.current * resistance;
+          const voltageDropPct = (voltageDrop / s.voltage) * 100;
+          const powerLoss = s.current * s.current * resistance;
+
+          return {
+            ...wire,
+            resistance,
+            voltageDrop,
+            voltageDropPct,
+            powerLoss,
+            meetsRequirement: voltageDropPct <= s.maxDrop && wire.ampacity >= s.current
+          };
+        });
+
+        // Find recommended gauge (smallest wire that meets requirements)
+        const recommended = results
+          .filter(r => r.meetsRequirement)
+          .sort((a, b) => b.awg - a.awg)[0];
+
+        // If no wire meets requirements, recommend the largest available
+        const finalRecommendation = recommended || results[0];
+
+        // Update results display
+        this.updateResults(finalRecommendation, results);
+
+        // Update wire comparison visualization
+        this.updateWireComparison(results, finalRecommendation);
+
+        // Save to URL
+        this.saveToUrl();
+      },
+
+      updateResults(r, allResults) {
+        const s = this.state;
+
+        document.getElementById('result-gauge').innerHTML =
+          `${r.awg}<span class="unit">AWG</span>`;
+
+        const gaugeNote = document.getElementById('result-gauge-note');
+        if (!r.meetsRequirement) {
+          gaugeNote.textContent = 'Warning: No standard gauge meets all requirements';
+          gaugeNote.className = 'result-subtext status-warning';
+        } else {
+          gaugeNote.textContent = 'Meets voltage drop and current requirements';
+          gaugeNote.className = 'result-subtext status-good';
+        }
+
+        document.getElementById('result-diameter').innerHTML =
+          `${r.diameter.toFixed(2)}<span class="unit">mm</span>`;
+
+        document.getElementById('result-area').innerHTML =
+          `${r.area.toFixed(2)}<span class="unit">mm²</span>`;
+
+        document.getElementById('result-vdrop').innerHTML =
+          `${r.voltageDrop.toFixed(3)}<span class="unit">V</span>`;
+
+        const vdropPct = document.getElementById('result-vdrop-pct');
+        vdropPct.textContent = `${r.voltageDropPct.toFixed(2)}% of ${s.voltage}V`;
+        vdropPct.className = r.voltageDropPct <= s.maxDrop
+          ? 'result-subtext status-good'
+          : 'result-subtext status-warning';
+
+        document.getElementById('result-power-loss').innerHTML =
+          `${r.powerLoss.toFixed(2)}<span class="unit">W</span>`;
+
+        const powerPct = (r.powerLoss / (s.voltage * s.current)) * 100;
+        document.getElementById('result-power-pct').textContent =
+          `${powerPct.toFixed(2)}% of total power`;
+
+        document.getElementById('result-resistance').innerHTML =
+          `${(r.resistance * 1000).toFixed(2)}<span class="unit">mΩ</span>`;
+
+        document.getElementById('result-capacity').innerHTML =
+          `${r.ampacity}<span class="unit">A</span>`;
+
+        const capacityNote = document.getElementById('result-capacity-note');
+        if (r.ampacity >= s.current) {
+          capacityNote.textContent = `${Math.round((s.current / r.ampacity) * 100)}% utilization`;
+          capacityNote.className = 'result-subtext status-good';
+        } else {
+          capacityNote.textContent = `Exceeds rating by ${Math.round(s.current - r.ampacity)}A`;
+          capacityNote.className = 'result-subtext status-warning';
+        }
+
+        // Update use-in links
+        this.updateUseInLinks();
+      },
+
+      updateWireComparison(results, recommended) {
+        const container = document.getElementById('wire-comparison');
+        const s = this.state;
+
+        // Show a subset of relevant gauges
+        const relevantGauges = results.filter(r =>
+          r.awg >= recommended.awg - 4 && r.awg <= recommended.awg + 8
+        ).slice(0, 7);
+
+        container.innerHTML = relevantGauges.map(wire => {
+          const isRecommended = wire.awg === recommended.awg;
+          const meetsReqs = wire.meetsRequirement;
+          const dropBarWidth = Math.min(100, (wire.voltageDropPct / s.maxDrop) * 100);
+          const ampBarWidth = Math.min(100, (s.current / wire.ampacity) * 100);
+
+          return `
+            <div class="wire-item ${isRecommended ? 'recommended' : ''} ${!meetsReqs ? 'insufficient' : ''}">
+              <div class="wire-header">
+                <span class="wire-gauge">${wire.awg} AWG</span>
+                <span class="wire-area">${wire.area.toFixed(2)} mm²</span>
+                ${isRecommended ? '<span class="wire-badge">Recommended</span>' : ''}
+              </div>
+              <div class="wire-visual">
+                <div class="wire-circle" style="width: ${8 + wire.diameter * 4}px; height: ${8 + wire.diameter * 4}px;"></div>
+              </div>
+              <div class="wire-stats">
+                <div class="wire-stat">
+                  <span class="wire-stat-label">V-Drop</span>
+                  <div class="wire-stat-bar">
+                    <div class="wire-stat-fill ${wire.voltageDropPct > s.maxDrop ? 'over' : ''}" style="width: ${dropBarWidth}%"></div>
+                  </div>
+                  <span class="wire-stat-value">${wire.voltageDropPct.toFixed(1)}%</span>
+                </div>
+                <div class="wire-stat">
+                  <span class="wire-stat-label">Current</span>
+                  <div class="wire-stat-bar">
+                    <div class="wire-stat-fill ${s.current > wire.ampacity ? 'over' : ''}" style="width: ${ampBarWidth}%"></div>
+                  </div>
+                  <span class="wire-stat-value">${wire.ampacity}A max</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      updateUseInLinks() {
+        const container = document.getElementById('use-in-links');
+        container.innerHTML = '';
+
+        // Power System Calculator link
+        const powerLink = document.createElement('a');
+        powerLink.href = `power-system.html`;
+        powerLink.className = 'use-in-link';
+        powerLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Power System Calculator
+        `;
+        container.appendChild(powerLink);
+
+        // Flight Time link
+        const flightLink = document.createElement('a');
+        flightLink.href = `flight-time.html?current=${this.state.current}&v=${this.state.voltage}`;
+        flightLink.className = 'use-in-link';
+        flightLink.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Flight Time Estimator
+        `;
+        container.appendChild(flightLink);
+      }
+    };
+
+    // Initialize calculator when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      WireCalc.init();
+    });
+  </script>
+
+  <style>
+    /* Wire comparison visualization styles */
+    .wire-comparison {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .wire-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      transition: all var(--transition-fast);
+    }
+
+    .wire-item.recommended {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
+    }
+
+    .wire-item.insufficient {
+      opacity: 0.6;
+    }
+
+    .wire-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .wire-gauge {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--text-primary);
+    }
+
+    .wire-area {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .wire-badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: #1a1a1a;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wire-visual {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    .wire-circle {
+      background: var(--accent);
+      border-radius: 50%;
+      min-width: 8px;
+      min-height: 8px;
+    }
+
+    .wire-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wire-stat {
+      display: grid;
+      grid-template-columns: 60px 1fr 60px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wire-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wire-stat-bar {
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .wire-stat-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width var(--transition-normal);
+    }
+
+    .wire-stat-fill.over {
+      background: #e74c3c;
+    }
+
+    .wire-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .wire-comparison {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+    }
+  </style>
+</body>
+</html>

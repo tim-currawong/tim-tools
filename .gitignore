@@ -1,0 +1,11 @@
+# Claude AI files
+.claude/
+
+# Temp files
+nul
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
